@@ -3,6 +3,7 @@ const url = require('url');
 const query = require('querystring');
 const htmlHandler = require('./htmlResponses.js');
 const jsonHandler = require('./jsonResponses.js');
+const board = require('./boardState.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
@@ -13,8 +14,7 @@ const urlStruct = {
     '/style.css': htmlHandler.getCSS,
     '/bundle.js': htmlHandler.getScript,
 
-    '/getUsers': jsonHandler.getUsers,
-    '/notReal': jsonHandler.notFound,
+    '/getTile': jsonHandler.getTileNum,
     notFound: jsonHandler.notFound,
   },
 };
@@ -44,7 +44,7 @@ const parseRequestBody = (request, response) => {
     const bodyParams = query.parse(bodyString);
 
     // With the body received in full, we can call the handler function
-    jsonHandler.addUser(request, response, bodyParams);
+    jsonHandler.tileClicked(request, response, bodyParams);
   });
 };
 
@@ -52,11 +52,10 @@ const parseRequestBody = (request, response) => {
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
   const params = query.parse(parsedUrl.query);
-  // const acceptedTypes = request.headers.accept.split(',');
 
   // If receiving a post request (with a valid url), call the associated method
   //  Since /addUser is the only url that will be set up, it just checks for that url
-  if (request.method === 'POST' && parsedUrl.pathname === '/addUser') {
+  if (request.method === 'POST' && parsedUrl.pathname === '/revealTile') {
     return parseRequestBody(request, response);
   }
 
@@ -72,4 +71,5 @@ const onRequest = (request, response) => {
 // Start server
 http.createServer(onRequest).listen(port, () => {
   console.log(`Listening on 127.0.0.1: ${port}`);
+  board.init();
 });

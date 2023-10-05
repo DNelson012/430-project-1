@@ -1,5 +1,4 @@
-// A very bad way to store info for a server
-const users = {};
+const board = require('./boardState.js');
 
 // Write a response and return it to the client
 const respondJSON = (request, response, status, object) => {
@@ -36,6 +35,39 @@ const notFound = (request, response) => {
 
   return respondJSON(request, response, 404, responseJSON);
 };
+
+const getTileNum = (request, response) => {
+  const pos = request.headers.body.split(",");
+  const dataJSON = {
+    message: "Tile received",
+    tileNum: board.getTile(pos[0], pos[1]),
+  };
+  return respondJSON(request, response, 200, dataJSON);
+}
+
+const tileClicked = (request, response, body) => {
+  // Initialize a default json object
+  const dataJSON = {
+    message: 'Server received game action.',
+  };
+
+  console.log(body);
+
+  // Default status code: 204, Updated
+  const responseCode = 204;
+
+  return respondJSON(request, response, responseCode, dataJSON);
+};
+
+module.exports = {
+  notFound,
+  getTileNum,
+  tileClicked,
+};
+
+
+
+
 
 // Returns the user object as JSON
 const getUsers = (request, response) => {
@@ -88,10 +120,4 @@ const addUser = (request, response, body) => {
   // If there was already a user that was now updated,
   // return just the head instead
   return respondJSONMeta(request, response, responseCode);
-};
-
-module.exports = {
-  getUsers,
-  addUser,
-  notFound,
 };

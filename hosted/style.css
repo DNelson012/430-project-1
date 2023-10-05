@@ -5,8 +5,11 @@ html, body {
   padding: 0;
 }
 
-#top {
+section, h2 {
   text-align: center;
+}
+
+#top {
   margin: 0 auto;
 }
 
@@ -15,7 +18,57 @@ html, body {
 }
 
 #content {
-  margin-top: 100px;
+  margin: 100px 0;
   font-size: 2em;
-  text-align: center;
+  min-height: 120px;
+}
+
+
+
+#mines {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+  grid-template-rows: repeat(8, 60px);
+  /*padding */
+  /*min-width */
+  /*min-height */
+  border: solid rgb(74, 74, 74) 3px;
+}
+
+.tile {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  
+  user-select: none;
+
+  border: solid rgb(74, 74, 74) 3px;
+  font-size: 2em;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.hidden {
+  cursor: pointer;
+
+  background-color: grey;
+  color: grey;
+}
+
+.revealed {
+  cursor: default;
+
+  background-color: lightskyblue;
+  color: black;
+}
+
+.mine {
+  background-color: rgb(255, 115, 141);
+  color: rgb(255, 115, 141);
 }

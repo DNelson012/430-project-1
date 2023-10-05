@@ -2,8 +2,13 @@ let content;
 let nameForm;
 let userForm;
 
+//
+
+let boardWidth;
+let boardHeight;
+
 // Parse the response and display its body
-const handleResponse = async (response, doParse) => {
+const handleResponse = async (response, method, obj) => {
   switch (response.status) {
     case 200:
       content.innerHTML = '<b>Success</b>';
@@ -13,7 +18,7 @@ const handleResponse = async (response, doParse) => {
       break;
     case 204:
       content.innerHTML = '<b>Updated (No Content)</b>';
-      return;
+      break;
     case 400:
       content.innerHTML = '<b>Bad Request</b>';
       break;
@@ -27,81 +32,113 @@ const handleResponse = async (response, doParse) => {
 
   // If we called this method with the second parameter set to true,
   // there is a body of the response to parse
-  if (doParse) {
-    const obj = await response.json();
+  if (method === "GET") {
+    const json = await response.json();
 
-    let jsonStr;
-    if (obj.users) {
-      jsonStr = JSON.stringify(obj.users);
+    let jsonStr = "";
+    if (json.users) {
+      jsonStr = JSON.stringify(json.users);
     } else {
-      jsonStr = `Message: ${obj.message}`;
+      jsonStr = `Message: ${json.message}`;
     }
     content.innerHTML += `<p>${jsonStr}</p>`;
+
+    revealTile(obj.x, obj.y, json.tileNum);
   }
+
+  if (method === "POST") {
+    getTile(obj.x, obj.y);
+  }
+
 };
 
-const postUser = async (form) => {
-  const nameAction = nameForm.getAttribute('action');
-  const nameMethod = nameForm.getAttribute('method');
-
-  const name = form.querySelector('#nameField').value;
-  const age = form.querySelector('#ageField').value;
-
+const postRevealTile = async (x, y) => {
   // Build a data string in the FORM-URLENCODED format.
-  const formData = `name=${name}&age=${age}`;
+  const data = `xPos=${x}&yPos=${y}`;
 
-  const response = await fetch(nameAction, {
-    method: nameMethod,
+  const response = await fetch('/revealTile', {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       Accept: 'application/json',
     },
-    body: formData,
+    body: data,
   });
 
-  handleResponse(response, nameMethod === 'post');
+  handleResponse(response, 'POST', { x, y });
 };
 
-// When the buttn is clicked, fetch data from the server
-const requestUpdate = async (form) => {
-  const url = form.querySelector('#urlField').value;
-  const method = form.querySelector('#methodSelect').value;
-
-  const response = await fetch(url, {
-    method,
+const getTile = async (x, y) => {
+  const response = await fetch('/getTile', {
+    method: 'GET',
     headers: {
       Accept: 'application/json',
+      body: `${x},${y}`,
     },
   });
 
-  handleResponse(response, method === 'get');
+  handleResponse(response, 'GET', {x, y});
 };
+
+//
+
+const revealTile = (x, y, num) => {
+  const tile = board.childNodes[Number(x) + boardWidth * Number(y)];
+
+  tile.classList.remove("hidden");
+  tile.classList.add("revealed");
+  tile.removeEventListener("click", clickTile);
+
+  const inner = tile.childNodes[0];
+  inner.textContent = num;
+
+  if (num > 9) {
+    tile.classList.add("mine");
+  }
+}
+
+const clickTile = (element) => {
+  const tile = element.currentTarget;
+  
+  const x = tile.getAttribute("data-x");
+  const y = tile.getAttribute("data-y");
+
+  postRevealTile(x, y);
+  return;
+}
+
+const createBoard = () => {
+  const board = document.querySelector('#board');
+
+  for (let i = 0; i < boardWidth; i++) {
+    for (let j = 0; j < boardHeight; j++) {
+      let element = document.createElement("div");
+      element.classList.add("tile");
+      element.classList.add("hidden");
+
+      element.setAttribute("data-x", j);
+      element.setAttribute("data-y", i);
+
+      element.addEventListener("click", clickTile);
+
+      let innerElem = document.createElement("div");
+      innerElem.classList.add("tileContent");
+      innerElem.textContent = `${j}${i}`;
+
+      element.appendChild(innerElem);
+      board.appendChild(element);
+    }
+  }
+}
 
 // Initialization
 const init = () => {
-  // Gets the content section
-  content = document.querySelector('#content');
+  content = document.querySelector("#content");
 
-  // Get the forms
-  nameForm = document.querySelector('#nameForm');
-  userForm = document.querySelector('#userForm');
+  boardWidth = 8;
+  boardHeight = 8;
 
-  // Handles the request to add a user
-  const addUser = (e) => {
-    e.preventDefault();
-    postUser(nameForm);
-    return false;
-  };
-
-  // Handles the request to get users
-  const getUsers = (e) => {
-    e.preventDefault();
-    requestUpdate(userForm);
-    return false;
-  };
-
-  nameForm.addEventListener('submit', addUser);
-  userForm.addEventListener('submit', getUsers);
+  createBoard();
 };
 
 window.onload = init;
