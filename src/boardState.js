@@ -4,7 +4,7 @@ let board;
 let mines;
 
 const setMines = () => {
-  mines = new Array();
+  mines = [];
   mines.push({ x: 1, y: 1 });
   mines.push({ x: 5, y: 0 });
   mines.push({ x: 5, y: 1 });
@@ -15,21 +15,16 @@ const calcNums = () => {
   for (let i = 0; i < mines.length; i++) {
     for (let xOffset = -1; xOffset <= 1; xOffset++) {
       for (let yOffset = -1; yOffset <= 1; yOffset++) {
-        // Add a lot to itself
-        //if (xOffset === 0 && yOffset === 0) { continue; }
-        if (xOffset === 0 && yOffset === 0) { 
+        const xAdjacent = mines[i].x + xOffset;
+        const yAdjacent = mines[i].y + yOffset;
+
+        // Add a lot to itself, anything above 10 is a mine
+        if (xOffset === 0 && yOffset === 0) {
           board[mines[i].x][mines[i].y] += 10;
-          continue; 
+        } else if (xAdjacent >= 0 && xAdjacent < wide && yAdjacent >= 0 && yAdjacent < tall) {
+          // Increment its mine count, skipping anything off the board
+          board[xAdjacent][yAdjacent] += 1;
         }
-
-        let xAdjacent = mines[i].x + xOffset;
-        let yAdjacent = mines[i].y + yOffset;
-        // Skip any tiles that would be off the board
-        if (xAdjacent < 0 || xAdjacent >= wide) { continue; }
-        if (yAdjacent < 0 || yAdjacent >= tall) { continue; }
-
-        // Increment its mine count
-        board[xAdjacent][yAdjacent] += 1;
       }
     }
   }
@@ -52,14 +47,44 @@ const init = () => {
   calcNums();
 };
 
-const getTile = (x, y) => {
-  if (board) {
-    return board[x][y];
-  }
+const getBoard = () => {
+
 }
+
+const getTile = (x, y) => {
+  let values = {};
+  if (x < 0 || x >= wide || y < 0 || y >= tall) {
+    return values;
+  }
+  let num = board[x][y];
+  values[`${x},${y}`] = num;
+  
+  /*
+  let toCheck = [];
+  if (num === 0) {
+    for (let xOffset = -1; xOffset <= 1; xOffset++) {
+      for (let yOffset = -1; yOffset <= 1; yOffset++) {
+        const xAdjacent = mines[i].x + xOffset;
+        const yAdjacent = mines[i].y + yOffset;
+
+        // Add a lot to itself, anything above 10 is a mine
+        if (xOffset === 0 && yOffset === 0) {
+          board[mines[i].x][mines[i].y] += 10;
+        } else if (xAdjacent >= 0 && xAdjacent < wide && yAdjacent >= 0 && yAdjacent < tall) {
+          // Increment its mine count, skipping anything off the board
+          board[xAdjacent][yAdjacent] += 1;
+        }
+      }
+    }
+  }
+  */
+
+  return board[x][y];
+};
 
 module.exports = {
   init,
   createBoard,
+  getBoard,
   getTile,
 };

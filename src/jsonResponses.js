@@ -36,39 +36,60 @@ const notFound = (request, response) => {
   return respondJSON(request, response, 404, responseJSON);
 };
 
-const getTileNum = (request, response) => {
-  const pos = request.headers.body.split(",");
+const getBoardVisible = (request, response) => {
   const dataJSON = {
-    message: "Tile received",
-    tileNum: board.getTile(pos[0], pos[1]),
+    message: 'Board sent',
+    'board': board.getBoard(),
   };
   return respondJSON(request, response, 200, dataJSON);
 }
 
+const getTileNum = (request, response) => {
+  if (!request.headers.body) {
+    const dataJSON = {
+      message: 'Invalid parameters for tile number',
+      id: 'badRequest_Num',
+    };
+
+    return respondJSON(request, response, 400, dataJSON);
+  }
+
+  const pos = request.headers.body.split(',');
+  const dataJSON = {
+    message: 'Tile received',
+    tileNum: board.getTile(pos[0], pos[1]),
+  };
+  return respondJSON(request, response, 200, dataJSON);
+};
+
 const tileClicked = (request, response, body) => {
-  // Initialize a default json object
+  // Check if the request has the proper parameters
+  if (!body.xPos || !body.yPos) {
+    const dataJSON = {
+      message: 'Invalid parameters for clicked tile.',
+      id: 'badRequest_Clicked',
+    };
+
+    return respondJSON(request, response, 400, dataJSON);
+  }
+
   const dataJSON = {
     message: 'Server received game action.',
   };
 
   console.log(body);
 
-  // Default status code: 204, Updated
-  const responseCode = 204;
-
-  return respondJSON(request, response, responseCode, dataJSON);
+  return respondJSON(request, response, 204, dataJSON);
 };
 
 module.exports = {
   notFound,
+  getBoardVisible,
   getTileNum,
   tileClicked,
 };
 
-
-
-
-
+/*
 // Returns the user object as JSON
 const getUsers = (request, response) => {
   // If handling a HEAD request, the data isn't needed
@@ -121,3 +142,4 @@ const addUser = (request, response, body) => {
   // return just the head instead
   return respondJSONMeta(request, response, responseCode);
 };
+*/
