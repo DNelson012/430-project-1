@@ -8,7 +8,7 @@ let boardWidth;
 let boardHeight;
 
 // Parse the response and display its body
-const handleResponse = async (response, method, obj) => {
+const handleResponse = async (response, method) => {
   switch (response.status) {
     case 200:
       content.innerHTML = '<b>Success</b>';
@@ -43,11 +43,11 @@ const handleResponse = async (response, method, obj) => {
     }
     content.innerHTML += `<p>${jsonStr}</p>`;
 
-    revealTile(obj.x, obj.y, json.tileNum);
+    updateBoard(json.board);
   }
 
   if (method === "POST") {
-    getTile(obj.x, obj.y);
+    getBoard();
   }
 
 };
@@ -65,22 +65,30 @@ const postRevealTile = async (x, y) => {
     body: data,
   });
 
-  handleResponse(response, 'POST', { x, y });
+  handleResponse(response, 'POST');
 };
 
-const getTile = async (x, y) => {
+const getBoard = async () => {
   const response = await fetch('/getTile', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
-      body: `${x},${y}`,
     },
   });
 
-  handleResponse(response, 'GET', {x, y});
+  handleResponse(response, 'GET');
 };
 
 //
+
+const updateBoard = (board) => {
+  const boardTiles = Object.keys(board);
+  for (let i = 0; i < boardTiles.length; i++) {
+    const num = board[boardTiles[i]];
+    const pos = boardTiles[i].split(',');
+    revealTile(pos[0], pos[1], num);
+  }
+}
 
 const revealTile = (x, y, num) => {
   const tile = board.childNodes[Number(x) + boardWidth * Number(y)];
@@ -139,6 +147,8 @@ const init = () => {
   boardHeight = 8;
 
   createBoard();
+
+  getBoard(0, 0);
 };
 
 window.onload = init;

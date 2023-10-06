@@ -39,10 +39,10 @@ const notFound = (request, response) => {
 const getBoardVisible = (request, response) => {
   const dataJSON = {
     message: 'Board sent',
-    'board': board.getBoard(),
+    board: board.getBoard(),
   };
   return respondJSON(request, response, 200, dataJSON);
-}
+};
 
 const getTileNum = (request, response) => {
   if (!request.headers.body) {
@@ -64,7 +64,7 @@ const getTileNum = (request, response) => {
 
 const tileClicked = (request, response, body) => {
   // Check if the request has the proper parameters
-  if (!body.xPos || !body.yPos) {
+  if (!body.xPos || !body.yPos || !board.isValid(body.xPos, body.yPos)) {
     const dataJSON = {
       message: 'Invalid parameters for clicked tile.',
       id: 'badRequest_Clicked',
@@ -73,11 +73,11 @@ const tileClicked = (request, response, body) => {
     return respondJSON(request, response, 400, dataJSON);
   }
 
+  board.revealTiles(body.xPos, body.yPos);
+
   const dataJSON = {
     message: 'Server received game action.',
   };
-
-  console.log(body);
 
   return respondJSON(request, response, 204, dataJSON);
 };
