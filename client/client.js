@@ -1,14 +1,14 @@
-let content;
-let nameForm;
-let userForm;
-
-//
-
+// Constants
 let boardWidth;
 let boardHeight;
 
+// Globals
+let content;
+
 // Parse the response and display its body
+//  and do anything else that is needed to update the board
 const handleResponse = async (response, method) => {
+  // Display the status code
   switch (response.status) {
     case 200:
       content.innerHTML = '<b>Success</b>';
@@ -30,15 +30,13 @@ const handleResponse = async (response, method) => {
       break;
   }
 
-  // If we called this method with the second parameter set to true,
-  // there is a body of the response to parse
+  // If the response was from a GET,
+  //  display the message
   if (method === "GET") {
     const json = await response.json();
 
     let jsonStr = "";
-    if (json.users) {
-      jsonStr = JSON.stringify(json.users);
-    } else {
+    if (json.message) {
       jsonStr = `Message: ${json.message}`;
     }
     content.innerHTML += `<p>${jsonStr}</p>`;
@@ -46,12 +44,15 @@ const handleResponse = async (response, method) => {
     updateBoard(json.board);
   }
 
+  // If a POST request was made to the server,
+  //  make a request to get the state of the board
   if (method === "POST") {
     getBoard();
   }
 
 };
 
+// Send the tile to reveal in a POST request
 const postRevealTile = async (x, y) => {
   // Build a data string in the FORM-URLENCODED format.
   const data = `xPos=${x}&yPos=${y}`;
@@ -68,8 +69,9 @@ const postRevealTile = async (x, y) => {
   handleResponse(response, 'POST');
 };
 
+// Get the current board state from the server
 const getBoard = async () => {
-  const response = await fetch('/getTile', {
+  const response = await fetch('/getBoard', {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -79,17 +81,9 @@ const getBoard = async () => {
   handleResponse(response, 'GET');
 };
 
-//
-
-const updateBoard = (board) => {
-  const boardTiles = Object.keys(board);
-  for (let i = 0; i < boardTiles.length; i++) {
-    const num = board[boardTiles[i]];
-    const pos = boardTiles[i].split(',');
-    revealTile(pos[0], pos[1], num);
-  }
-}
-
+// Given a tile's x and y position and a number,
+//  reveal the tile at the position 
+//  and replace its text with the given number
 const revealTile = (x, y, num) => {
   const tile = board.childNodes[Number(x) + boardWidth * Number(y)];
 
@@ -105,16 +99,35 @@ const revealTile = (x, y, num) => {
   }
 }
 
+// Given an object containing a dictionary of tile coords and numbers,
+//  reveal the respective tiles on the board
+//  and make them display the correct number
+const updateBoard = (board) => {
+  const boardTiles = Object.keys(board);
+  for (let i = 0; i < boardTiles.length; i++) {
+    const num = board[boardTiles[i]];
+    const pos = boardTiles[i].split(',');
+    revealTile(pos[0], pos[1], num);
+  }
+}
+
+// Callback function for when a tile is clicked on
 const clickTile = (element) => {
   const tile = element.currentTarget;
   
   const x = tile.getAttribute("data-x");
   const y = tile.getAttribute("data-y");
 
-  postRevealTile(x, y);
+  if (element.ctrlKey) {
+    // If the user is holding Ctrl, flag the tile
+  } else {
+    // Otherwise, reveal the tile
+    postRevealTile(x, y);
+  }
   return;
 }
 
+// Creates the board in HTML
 const createBoard = () => {
   const board = document.querySelector('#board');
 
@@ -147,8 +160,12 @@ const init = () => {
   boardHeight = 8;
 
   createBoard();
+  getBoard();
 
-  getBoard(0, 0);
+  // Taken from a Medium article, disables right click context menu on the board
+  document.querySelector('#board').addEventListener('contextmenu', event => {
+    event.preventDefault();
+  });
 };
 
 window.onload = init;

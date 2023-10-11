@@ -1,10 +1,18 @@
+// Constants
 const wide = 8;
 const tall = 8;
+
+// Globals
 let board;
 let revealed;
 let mines;
+// bool for if a first move was made
 
+// Initializes the arrays for the state of the board
 const createBoard = () => {
+  // Board stores the values of each tile
+  //  More than 10 is a mine
+  //  More than 100 is a flag
   board = new Array(wide);
   for (let i = 0; i < wide; i++) {
     board[i] = new Array(tall);
@@ -13,6 +21,7 @@ const createBoard = () => {
     }
   }
 
+  // Revealed stores which tiles have been revealed
   revealed = new Array(wide);
   for (let i = 0; i < wide; i++) {
     revealed[i] = new Array(tall);
@@ -22,6 +31,7 @@ const createBoard = () => {
   }
 };
 
+// Set the initial mines for the board
 const setMines = () => {
   mines = [];
   mines.push({ x: 1, y: 1 });
@@ -30,6 +40,10 @@ const setMines = () => {
   mines.push({ x: 5, y: 3 });
 };
 
+// Calculate the number value for each tile
+// Iterates over the mines array and adds values to adjacent tiles
+//  Adds 10 to itself to indicate that it is a mine
+// Should only be needed at initialization
 const calcNums = () => {
   for (let i = 0; i < mines.length; i++) {
     for (let xOffset = -1; xOffset <= 1; xOffset++) {
@@ -49,6 +63,8 @@ const calcNums = () => {
   }
 };
 
+// Checks if the given position is a valid tile on the board
+//  Returns false if it is not, true otherwise
 const isValid = (x, y) => {
   if (x < 0 || x >= wide || y < 0 || y >= tall) {
     return false;
@@ -56,6 +72,8 @@ const isValid = (x, y) => {
   return true;
 };
 
+// Helper method for revealTiles()
+// Checks if a tile is valid and hidden before adding to an array
 const addAdjacent = (x, y, arr) => {
   for (let xOffset = -1; xOffset <= 1; xOffset++) {
     for (let yOffset = -1; yOffset <= 1; yOffset++) {
@@ -70,20 +88,28 @@ const addAdjacent = (x, y, arr) => {
   }
 };
 
+// Reveals at least one tile on the board
+//  also reveals all tiles around any 0 value tile
+//  that had been revealed during this function call
 const revealTiles = (x, y) => {
-  const values = {};
-  const toCheck = [[x, y]];
+  const values = {}; // Tiles to return -> 'x,y': value
+  const toCheck = [[x, y]]; // Tiles that need to be revealed
 
+  // If the first position is not valid, just return nothing early
   if (!isValid(x, y)) {
     return values;
   }
 
+  // As long as there are tiles to check, keep iterating
   while (toCheck.length > 0) {
+    // Take out one of the positions from the array
     const tilePos = toCheck.pop();
     const posX = tilePos[0];
     const posY = tilePos[1];
     revealed[posX][posY] = true;
 
+    // If the revealed tile is a zero,
+    // add every adjacent value to the toCheck array
     const num = board[posX][posY];
     values[`${posX},${posY}`] = num;
     if (num === 0) {
@@ -91,9 +117,12 @@ const revealTiles = (x, y) => {
     }
   }
 
+  // Return all the values that were revealed
   return values;
 };
 
+// Returns an object that has all revealed tiles
+//  in the form -> 'x,y': value
 const getBoard = () => {
   const values = {};
   for (let i = 0; i < wide; i++) {
@@ -107,8 +136,7 @@ const getBoard = () => {
   return values;
 };
 
-const getTile = (x, y) => board[x][y];
-
+// Initialization
 const init = () => {
   createBoard();
 
@@ -122,5 +150,10 @@ module.exports = {
   isValid,
   revealTiles,
   getBoard,
-  getTile,
 };
+
+/*
+// Gets the number value of a given tile
+// Not currently used
+const getTile = (x, y) => board[x][y];
+*/

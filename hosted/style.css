@@ -72,3 +72,7 @@ section, h2 {
   background-color: rgb(255, 115, 141);
   color: rgb(255, 115, 141);
 }
+
+#controls {
+  margin-top: 1em;
+}

@@ -28,15 +28,24 @@ const notFound = (request, response) => {
     return respondJSONMeta(request, response, 404);
   }
 
+  // Return the response with the JSON
   const responseJSON = {
     message: 'The page you are looking for was not found.',
     id: 'notFound',
   };
-
   return respondJSON(request, response, 404, responseJSON);
 };
 
+// Return a JSON object with all revealed tiles
+//  As a dict with position as a key
+//  and number of mines as a value
 const getBoardVisible = (request, response) => {
+  // Just the HEAD
+  if (request.method === 'HEAD') {
+    return respondJSONMeta(request, response, 200);
+  }
+
+  // Return the response with the JSON
   const dataJSON = {
     message: 'Board sent',
     board: board.getBoard(),
@@ -44,35 +53,21 @@ const getBoardVisible = (request, response) => {
   return respondJSON(request, response, 200, dataJSON);
 };
 
-const getTileNum = (request, response) => {
-  if (!request.headers.body) {
-    const dataJSON = {
-      message: 'Invalid parameters for tile number',
-      id: 'badRequest_Num',
-    };
-
-    return respondJSON(request, response, 400, dataJSON);
-  }
-
-  const pos = request.headers.body.split(',');
-  const dataJSON = {
-    message: 'Tile received',
-    tileNum: board.getTile(pos[0], pos[1]),
-  };
-  return respondJSON(request, response, 200, dataJSON);
-};
-
+// Given a POST request from the client,
+// attempts to update the board with the tiles that would be revealed
 const tileClicked = (request, response, body) => {
   // Check if the request has the proper parameters
   if (!body.xPos || !body.yPos || !board.isValid(body.xPos, body.yPos)) {
+    // Return the response with the JSON
     const dataJSON = {
       message: 'Invalid parameters for clicked tile.',
       id: 'badRequest_Clicked',
     };
-
     return respondJSON(request, response, 400, dataJSON);
   }
 
+  // Reveal the tiles on the board based on the tile that was clicked on
+  // This function does not return anything to the client 
   board.revealTiles(body.xPos, body.yPos);
 
   const dataJSON = {
@@ -85,61 +80,45 @@ const tileClicked = (request, response, body) => {
 module.exports = {
   notFound,
   getBoardVisible,
-  getTileNum,
   tileClicked,
 };
 
 /*
-// Returns the user object as JSON
-const getUsers = (request, response) => {
-  // If handling a HEAD request, the data isn't needed
+// Returns a response with the given tile's value
+// Not currently used
+const getTileNum = (request, response) => {
+  // Get the position from the request
+  let pos = null;
+  if (request.headers.body) {
+    pos = request.headers.body.split(',');
+  }
+
+  // If there are no values or the values are invalid,
+  //  send a badRequest response
+  if (!pos || board.isValid(pos[0], pos[1])) {
+    // Just the HEAD
+    if (request.method === 'HEAD') {
+      return respondJSONMeta(request, response, 400);
+    }
+
+    // Return the response with the JSON
+    const dataJSON = {
+      message: 'Invalid parameters for tile number',
+      id: 'badRequest_Num',
+    };
+    return respondJSON(request, response, 400, dataJSON);
+  }
+
+  // Just the HEAD
   if (request.method === 'HEAD') {
     return respondJSONMeta(request, response, 200);
   }
 
-  // Get the users and add them to the response
+  // Return the response with the JSON
   const dataJSON = {
-    users,
+    message: 'Tile received',
+    tileNum: board.getTile(pos[0], pos[1]),
   };
   return respondJSON(request, response, 200, dataJSON);
-};
-
-// Adds the user in the request to the object stored in server memory
-//  Based on the same method from the body-parse demo
-const addUser = (request, response, body) => {
-  // Initialize a default json object
-  const dataJSON = {
-    message: 'Name and age are both required.',
-  };
-
-  // If the parameters are not present, return a bad request
-  if (!body.name || !body.age) {
-    dataJSON.id = 'missingParams';
-    return respondJSON(request, response, 400, dataJSON);
-  }
-
-  // Default status code: 204, Updated
-  let responseCode = 204;
-
-  // If the user doesn't exist yet
-  if (!users[body.name]) {
-    // Set the status code to 201 (created) and create an empty user
-    responseCode = 201;
-    users[body.name] = {};
-  }
-
-  // Add (or update) fields for this user name
-  users[body.name].name = body.name;
-  users[body.name].age = body.age;
-
-  // If a new user was made, send back the response
-  if (responseCode === 201) {
-    dataJSON.message = 'Created Successfully';
-    return respondJSON(request, response, responseCode, dataJSON);
-  }
-
-  // If there was already a user that was now updated,
-  // return just the head instead
-  return respondJSONMeta(request, response, responseCode);
 };
 */
