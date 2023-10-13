@@ -6,7 +6,8 @@ const tall = 8;
 let board;
 let revealed;
 let mines;
-// bool for if a first move was made
+let firstMove;
+let indices; // Really shouldn't be, but its useful
 
 // Initializes the arrays for the state of the board
 const createBoard = () => {
@@ -32,12 +33,24 @@ const createBoard = () => {
 };
 
 // Set the initial mines for the board
-const setMines = () => {
+const setMines = (num) => {
   mines = [];
-  mines.push({ x: 1, y: 1 });
-  mines.push({ x: 5, y: 0 });
-  mines.push({ x: 5, y: 1 });
-  mines.push({ x: 5, y: 3 });
+  const numTiles = wide * tall;
+
+  // Make an array of all possible tile indices
+  // https://stackoverflow.com/questions/3751520/how-to-generate-sequence-of-numbers-chars-in-javascript
+  indices = Array(numTiles).fill().map((element, index) => index);
+
+  // For the number given, randomly place that many mines
+  for (let i = 0; i < num; i++) {
+    let index = Math.floor(Math.random() * (numTiles - i));
+    index = indices.splice(index, 1);
+    const x = index % wide;
+    const y = Math.floor(index / tall);
+    mines.push({ x, y });
+  }
+
+  console.log(mines);
 };
 
 // Calculate the number value for each tile
@@ -63,6 +76,13 @@ const calcNums = () => {
   }
 };
 
+// A mine was clicked and the game must end
+// Needs to return the whole board, 
+// and then something saying the player lost
+const gameOver = () => {
+
+};
+
 // Checks if the given position is a valid tile on the board
 //  Returns false if it is not, true otherwise
 const isValid = (x, y) => {
@@ -70,6 +90,18 @@ const isValid = (x, y) => {
     return false;
   }
   return true;
+};
+
+// Loops through all the mines,
+// returns the index in the mines array
+// -1 if it isn't there
+const checkMines = (x, y) => {
+  for (let i = 0; i < mines.length; i++) {
+    if (Number(mines[i].x) === Number(x) && Number(mines[i].y) === Number(y)) {
+      return i;
+    }
+  }
+  return -1;
 };
 
 // Helper method for revealTiles()
@@ -100,12 +132,39 @@ const revealTiles = (x, y) => {
     return values;
   }
 
+  // Check if the tile is a mine
+  const mineIndex = checkMines(x, y);
+  if (mineIndex >= 0) {
+    if (firstMove) {
+      // If your first move is to click on a mine, move the mine
+      // Delete old mine
+      delete mines[mineIndex];
+      board[x][y] = board[x][y] - 10;
+      // Take a random index from that indices array from before
+      // It only has indices that do NOT contain mines
+      const rand = Math.floor(Math.random() * indices.length);
+      const index = indices.splice(rand, 1);
+      // Make a new mine with that index
+      const mineX = index % wide;
+      const mineY = Math.floor(index / tall);
+      mines.push({ mineX, mineY });
+    }
+    else {
+      // Otherwise, you clicked on a mine and you lost
+      return gameOver();
+    }
+  }
+
   // As long as there are tiles to check, keep iterating
   while (toCheck.length > 0) {
     // Take out one of the positions from the array
     const tilePos = toCheck.pop();
     const posX = tilePos[0];
     const posY = tilePos[1];
+
+    // Don't reveal flagged tiles
+
+    // Reveal the tile
     revealed[posX][posY] = true;
 
     // If the revealed tile is a zero,
@@ -116,6 +175,11 @@ const revealTiles = (x, y) => {
       addAdjacent(posX, posY, toCheck);
     }
   }
+
+  // You only move first once
+  if (firstMove) { firstMove = false; }
+
+  // Check if the only tiles left are mines
 
   // Return all the values that were revealed
   return values;
@@ -138,9 +202,10 @@ const getBoard = () => {
 
 // Initialization
 const init = () => {
+  firstMove = true;
   createBoard();
 
-  setMines();
+  setMines(9);
   calcNums();
 };
 

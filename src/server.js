@@ -44,6 +44,9 @@ const parseRequestBody = (request, response) => {
     const bodyParams = query.parse(bodyString);
 
     // With the body received in full, we can call the handler function
+    //
+    //  Resetting the board will also be a POST request, get that fixed
+    //
     jsonHandler.tileClicked(request, response, bodyParams);
   });
 };

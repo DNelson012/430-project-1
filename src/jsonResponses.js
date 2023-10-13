@@ -67,8 +67,10 @@ const tileClicked = (request, response, body) => {
   }
 
   // Reveal the tiles on the board based on the tile that was clicked on
-  // This function does not return anything to the client 
+  // This function does not return anything to the client
   board.revealTiles(body.xPos, body.yPos);
+
+  // Check if there was a game over
 
   const dataJSON = {
     message: 'Server received game action.',
