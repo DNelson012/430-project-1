@@ -42,7 +42,9 @@ const handleResponse = async (response, method) => {
     }
     content.innerHTML += `<p>${jsonStr}</p>`;
 
-    updateBoard(json.board);
+    if (json.board) { updateBoard(json.board); }
+
+    if (json.quad) { displayHint(json.hint, json.quad); }
   }
 
   // If a POST request was made to the server,
@@ -99,6 +101,7 @@ const postResetBoard = async () => {
   
   // Make a new board after
   createBoard();
+  document.querySelector("#hint").innerHTML = "- - -";
 
   handleResponse(response, 'POST~'); 
   // It is a POST, but I don't want it fetching the board
@@ -117,8 +120,18 @@ const getBoard = async () => {
   handleResponse(response, 'GET');
 };
 
-const getHint = async () => {
-  
+// Based on which hint button was pressed, ask the server for a hint
+const getHint = async (element) => {
+  const quad = element.currentTarget.value;
+
+  const response = await fetch(`/getHint?quad=${quad}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  handleResponse(response, 'GET');
 }
 
 // Given a tile's x and y position and a number,
@@ -161,9 +174,11 @@ const revealTile = (x, y, num) => {
   }
 }
 
+// Things to do when the game was lost
 const gameLost = () => {
 
 }
+// Things to do when the game was won
 const gameWon = () => {
   
 }
@@ -189,6 +204,12 @@ const updateBoard = (board) => {
     const pos = boardTiles[i].split(',');
     revealTile(pos[0], pos[1], num);
   }
+}
+
+// Show the hint to the user
+const displayHint = (hint, quad) => {
+  const hintStr = `There are ${hint} mines in quadrant ${quad}.`;
+  document.querySelector("#hint").innerHTML = hintStr;
 }
 
 // Callback function for when a tile is clicked on
@@ -253,10 +274,10 @@ const init = () => {
   // Sets up the reset button
   document.querySelector("#reset").addEventListener('click', postResetBoard);
   // Sets up the hint buttons
-  document.querySelector("#quad1").addEventListener('click', postResetBoard);
-  document.querySelector("#quad2").addEventListener('click', postResetBoard);
-  document.querySelector("#quad3").addEventListener('click', postResetBoard);
-  document.querySelector("#quad4").addEventListener('click', postResetBoard);
+  document.querySelector("#quad1").addEventListener('click', getHint);
+  document.querySelector("#quad2").addEventListener('click', getHint);
+  document.querySelector("#quad3").addEventListener('click', getHint);
+  document.querySelector("#quad4").addEventListener('click', getHint);
 
   // Taken from a Medium article, disables right click context menu on the board
   document.querySelector('#board').addEventListener('contextmenu', event => {

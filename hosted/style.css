@@ -131,6 +131,10 @@ section, h2 {
 
 
 
+#hint {
+  margin-bottom: 0;
+}
+
 #mines hr {
   width: 100%;
   margin: 1.5em 0 0.5em;

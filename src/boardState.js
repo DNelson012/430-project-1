@@ -226,6 +226,50 @@ const getBoard = () => {
   return values;
 };
 
+// Returns the number of mines in the given quad
+const getHint = (quad) => {
+  quad = Number(quad); // I love javascript
+  let xLow = -1; // Inclusive
+  let xHigh = -1; // Exclusive
+  let yLow = -1;
+  let yHigh = -1;
+  switch (quad) {
+    case 1:
+      xLow = 4; xHigh = 8;
+      yLow = 0; yHigh = 4;
+      break;
+    case 2:
+      xLow = 0; xHigh = 4;
+      yLow = 0; yHigh = 4;
+      break;
+    case 3:
+      xLow = 0; xHigh = 4;
+      yLow = 4; yHigh = 8;
+      break;
+    default:
+      // Default is 4. The data is already sanitized,
+      // so it should only ever be 4 if not 1, 2, or 3
+      xLow = 4; xHigh = 8;
+      yLow = 4; yHigh = 8;
+      break;
+  }
+
+  let numMines = 0;
+  for (let x = xLow; x < xHigh; x++) {
+    for (let y = yLow; y < yHigh; y++) {
+      let num = board[x][y];
+      if (num >= 100) { num -= 100; } // Ignore flags
+      // If it is a mine, increment the count
+      if (num >= 10) {
+        numMines++;
+      }
+    }
+  }
+  console.log(xLow + "" + xHigh);
+
+  return numMines;
+};
+
 // Initialization
 const init = () => {
   firstMove = true;
@@ -249,6 +293,7 @@ module.exports = {
   revealTiles,
   flagTile,
   getBoard,
+  getHint,
   resetBoard,
 };
 

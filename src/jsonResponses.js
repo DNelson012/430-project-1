@@ -53,6 +53,40 @@ const getBoardVisible = (request, response) => {
   return respondJSON(request, response, 200, dataJSON);
 };
 
+const getHint = (request, response, params) => {
+  // Check if the parameter is a valid quad
+  let quad = null;
+  if (params && params.quad) {
+    quad = params.quad;
+  }
+  if (!quad || quad <= 0 || quad > 4) {
+    // Just the HEAD
+    if (request.method === 'HEAD') {
+      return respondJSONMeta(request, response, 400);
+    }
+
+    // Return the response with the JSON
+    const dataJSON = {
+      message: 'Invalid parameters for hint',
+      id: 'badRequest_Hint',
+    };
+    return respondJSON(request, response, 400, dataJSON);
+  }
+
+  // Just the HEAD
+  if (request.method === 'HEAD') {
+    return respondJSONMeta(request, response, 200);
+  }
+
+  // Return the response with the JSON
+  const dataJSON = {
+    message: 'Hint sent',
+    hint: board.getHint(quad),
+    quad,
+  };
+  return respondJSON(request, response, 200, dataJSON);
+};
+
 // Given a POST request from the client,
 // attempts to update the board with the tiles that would be revealed
 const tileClicked = (request, response, body) => {
@@ -115,6 +149,7 @@ const resetBoard = (request, response) => {
 module.exports = {
   notFound,
   getBoardVisible,
+  getHint,
   tileClicked,
   tileFlagged,
   resetBoard,

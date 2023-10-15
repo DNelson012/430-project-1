@@ -15,6 +15,7 @@ const urlStruct = {
     '/bundle.js': htmlHandler.getScript,
 
     '/getBoard': jsonHandler.getBoardVisible,
+    '/getHint': jsonHandler.getHint,
     notFound: jsonHandler.notFound,
   },
 };
