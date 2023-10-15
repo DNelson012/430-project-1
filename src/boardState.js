@@ -80,7 +80,7 @@ const calcNums = () => {
 // and then something saying the player lost
 const gameOver = () => {
   // Turns on the flag saying the game is over
-  gameState = "LOSE";
+  gameState = 'LOSE';
 
   // Fill an object with all the tiles on the board
   const values = {};
@@ -88,11 +88,11 @@ const gameOver = () => {
     const x = i % wide;
     const y = Math.floor(i / tall);
     let num = board[x][y];
-    if (num >= 100) { num -= 100 } // Remove flags
+    if (num >= 100) { num -= 100; } // Remove flags
     values[`${x},${y}`] = num;
   }
 
-  // Again, doesn't actually go anywhere 
+  // Again, doesn't actually go anywhere
   // I might do something with this later though
   return values;
 };
@@ -197,27 +197,27 @@ const revealTiles = (x, y) => {
   return values;
 };
 
-// Flags a tile on the board, 
+// Flags a tile on the board,
 // preventing it from being revealed
 const flagTile = (x, y) => {
   let mod = 1;
   if (board[x][y] >= 100) { mod = -1; }
   board[x][y] += mod * 100;
-}
+};
 
 // Returns an object that has all revealed tiles
 //  in the form -> 'x,y': value
 const getBoard = () => {
   const values = {};
-  if (gameState != "PLAY") {
+  if (gameState !== 'PLAY') {
     values.state = gameState;
   }
   for (let i = 0; i < wide; i++) {
     for (let j = 0; j < tall; j++) {
       let num = board[i][j];
-      if (gameState === "LOSE" || revealed[i][j] || num >= 100) {
+      if (gameState === 'LOSE' || revealed[i][j] || num >= 100) {
         // Remove flags when its game over
-        if (gameState === "LOSE" && num >= 100) { num -= 100 } 
+        if (gameState === 'LOSE' && num >= 100) { num -= 100; }
         values[`${i},${j}`] = num;
       }
     }
@@ -226,20 +226,20 @@ const getBoard = () => {
   return values;
 };
 
-// Reset the board
-// Just call init again, should work fine
-const resetBoard = () => {
-  init();
-}
-
 // Initialization
 const init = () => {
   firstMove = true;
-  gameState = "PLAY";
+  gameState = 'PLAY';
   createBoard();
 
   setMines(9);
   calcNums();
+};
+
+// Reset the board
+// Just call init again, should work fine
+const resetBoard = () => {
+  init();
 };
 
 module.exports = {

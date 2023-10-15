@@ -99,7 +99,7 @@ const tileFlagged = (request, response, body) => {
   };
 
   return respondJSON(request, response, 204, dataJSON);
-}
+};
 
 // Resets the board, starting a new game
 const resetBoard = (request, response) => {
@@ -110,7 +110,7 @@ const resetBoard = (request, response) => {
   };
 
   return respondJSON(request, response, 201, dataJSON);
-}
+};
 
 module.exports = {
   notFound,
