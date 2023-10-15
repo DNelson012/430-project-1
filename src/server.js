@@ -22,7 +22,7 @@ const urlStruct = {
 // Needed for POST requests, takes all the chunks of data to be sent
 //  and makes sure they are compiled correctly before handling the request
 // Largely unmodified from the parse-body demo
-const parseRequestBody = (request, response) => {
+const parseRequestBody = (request, response, callback) => {
   const body = [];
 
   // If there's any kind of error, set the status to 400 and end the response
@@ -44,10 +44,7 @@ const parseRequestBody = (request, response) => {
     const bodyParams = query.parse(bodyString);
 
     // With the body received in full, we can call the handler function
-    //
-    //  Resetting the board will also be a POST request, get that fixed
-    //
-    jsonHandler.tileClicked(request, response, bodyParams);
+    callback(request, response, bodyParams);
   });
 };
 
@@ -55,11 +52,22 @@ const parseRequestBody = (request, response) => {
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url);
   const params = query.parse(parsedUrl.query);
+  // Use these params with the Hint buttons
+  // only need one function if the value attr of the button is set
 
   // If receiving a post request (with a valid url), call the associated method
   //  Since /addUser is the only url that will be set up, it just checks for that url
-  if (request.method === 'POST' && parsedUrl.pathname === '/revealTile') {
-    return parseRequestBody(request, response);
+  if (request.method === 'POST') {
+    switch (parsedUrl.pathname) {
+      case '/revealTile':
+        return parseRequestBody(request, response, jsonHandler.tileClicked);
+      case '/flagTile':
+        return parseRequestBody(request, response, jsonHandler.tileFlagged);
+      case '/resetBoard':
+        return parseRequestBody(request, response, jsonHandler.resetBoard);
+      default:
+        return urlStruct.GET.notFound(request, response);
+    }
   }
 
   // Otherwise, assume its a GET/HEAD request

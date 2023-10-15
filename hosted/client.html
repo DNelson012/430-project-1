@@ -6,16 +6,33 @@
   <script src="/bundle.js"></script>
 </head>
 <body>
-  <section id="content">
-  </section>
+  <div id="wrapper">
+    <h1>Server-side Minesweeper</h1>
+    <h3>Dan Nelson IGME 430 Project 1</h3>
+    <section id="mines">
+      <div id="board"></div>
+      <hr>
+      <div id="controls">
+        <button id="quad2" type="button"> - Hint - </button>
+        <b>- - -</b> 
+        <button id="quad1" type="button"> - Hint - </button>
 
-  <section id="mines">
-    <h2>Project 1 Below</h2>
-    <div id="board"></div>
-    <div id="controls">
-      <button type="button">Press to Reset</button>
-    </div>
-  </section>
-
+        <b>- - -</b>
+        <button id="reset" type="button">Press to Reset</button>
+        <b>- - -</b>
+        
+        <button id="quad3" type="button"> - Hint - </button>
+        <b>- - -</b> 
+        <button id="quad4" type="button"> - Hint - </button>
+      </div>
+    </section>
+    
+    <section id="content">
+      <div>
+        <p><b>Server response log</b></p>
+        <hr>
+      </div>
+    </section>
+  </div>
 </body>
 </html>

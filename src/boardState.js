@@ -8,6 +8,7 @@ let revealed;
 let mines;
 let firstMove;
 let indices; // Really shouldn't be, but its useful
+let gameState;
 
 // Initializes the arrays for the state of the board
 const createBoard = () => {
@@ -49,8 +50,6 @@ const setMines = (num) => {
     const y = Math.floor(index / tall);
     mines.push({ x, y });
   }
-
-  console.log(mines);
 };
 
 // Calculate the number value for each tile
@@ -77,10 +76,25 @@ const calcNums = () => {
 };
 
 // A mine was clicked and the game must end
-// Needs to return the whole board, 
+// Needs to return the whole board,
 // and then something saying the player lost
 const gameOver = () => {
+  // Turns on the flag saying the game is over
+  gameState = "LOSE";
 
+  // Fill an object with all the tiles on the board
+  const values = {};
+  for (let i = 0; i < tall * wide; i++) {
+    const x = i % wide;
+    const y = Math.floor(i / tall);
+    let num = board[x][y];
+    if (num >= 100) { num -= 100 } // Remove flags
+    values[`${x},${y}`] = num;
+  }
+
+  // Again, doesn't actually go anywhere 
+  // I might do something with this later though
+  return values;
 };
 
 // Checks if the given position is a valid tile on the board
@@ -95,9 +109,10 @@ const isValid = (x, y) => {
 // Loops through all the mines,
 // returns the index in the mines array
 // -1 if it isn't there
-const checkMines = (x, y) => {
+const findMines = (x, y) => {
   for (let i = 0; i < mines.length; i++) {
-    if (Number(mines[i].x) === Number(x) && Number(mines[i].y) === Number(y)) {
+    if (Number(mines[i].x) === Number(x)
+    && Number(mines[i].y) === Number(y)) {
       return i;
     }
   }
@@ -127,19 +142,16 @@ const revealTiles = (x, y) => {
   const values = {}; // Tiles to return -> 'x,y': value
   const toCheck = [[x, y]]; // Tiles that need to be revealed
 
-  // If the first position is not valid, just return nothing early
-  if (!isValid(x, y)) {
-    return values;
-  }
-
   // Check if the tile is a mine
-  const mineIndex = checkMines(x, y);
-  if (mineIndex >= 0) {
+  const mineIndex = findMines(x, y);
+  // Check if the tile is flagged
+  const isFlagged = board[x][y] >= 100;
+  if (mineIndex >= 0 && !isFlagged) {
     if (firstMove) {
       // If your first move is to click on a mine, move the mine
       // Delete old mine
-      delete mines[mineIndex];
-      board[x][y] = board[x][y] - 10;
+      mines.splice(mineIndex, 1);
+      board[x][y] -= 10;
       // Take a random index from that indices array from before
       // It only has indices that do NOT contain mines
       const rand = Math.floor(Math.random() * indices.length);
@@ -147,9 +159,8 @@ const revealTiles = (x, y) => {
       // Make a new mine with that index
       const mineX = index % wide;
       const mineY = Math.floor(index / tall);
-      mines.push({ mineX, mineY });
-    }
-    else {
+      mines.push({ x: mineX, y: mineY });
+    } else {
       // Otherwise, you clicked on a mine and you lost
       return gameOver();
     }
@@ -182,17 +193,32 @@ const revealTiles = (x, y) => {
   // Check if the only tiles left are mines
 
   // Return all the values that were revealed
+  //  Currently doesn't do anything with return
   return values;
 };
+
+// Flags a tile on the board, 
+// preventing it from being revealed
+const flagTile = (x, y) => {
+  let mod = 1;
+  if (board[x][y] >= 100) { mod = -1; }
+  board[x][y] += mod * 100;
+}
 
 // Returns an object that has all revealed tiles
 //  in the form -> 'x,y': value
 const getBoard = () => {
   const values = {};
+  if (gameState != "PLAY") {
+    values.state = gameState;
+  }
   for (let i = 0; i < wide; i++) {
     for (let j = 0; j < tall; j++) {
-      if (revealed[i][j]) {
-        values[`${i},${j}`] = board[i][j];
+      let num = board[i][j];
+      if (gameState === "LOSE" || revealed[i][j] || num >= 100) {
+        // Remove flags when its game over
+        if (gameState === "LOSE" && num >= 100) { num -= 100 } 
+        values[`${i},${j}`] = num;
       }
     }
   }
@@ -200,9 +226,16 @@ const getBoard = () => {
   return values;
 };
 
+// Reset the board
+// Just call init again, should work fine
+const resetBoard = () => {
+  init();
+}
+
 // Initialization
 const init = () => {
   firstMove = true;
+  gameState = "PLAY";
   createBoard();
 
   setMines(9);
@@ -214,7 +247,9 @@ module.exports = {
   createBoard,
   isValid,
   revealTiles,
+  flagTile,
   getBoard,
+  resetBoard,
 };
 
 /*

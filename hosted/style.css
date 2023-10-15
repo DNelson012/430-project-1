@@ -3,6 +3,24 @@ html, body {
   width: 100%;
   margin: 0;
   padding: 0;
+  
+  background-color: rgb(68, 77, 124);
+  color: rgb(9, 23, 59);
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+body {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  
+  text-align: center;
+}
+
+#wrapper {
+  padding: 100px 10%;
+  background-color: rgb(144, 164, 194);
+
 }
 
 section, h2 {
@@ -18,9 +36,31 @@ section, h2 {
 }
 
 #content {
-  margin: 100px 0;
-  font-size: 2em;
-  min-height: 120px;
+  /* https://stackoverflow.com/questions/18614301/keep-overflow-div-scrolled-to-bottom-unless-user-scrolls-up */
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column-reverse;
+  text-align: left;
+
+  margin: 100px 0 50px;
+  padding: 1em 0.5em;
+  height: 150px;
+
+  background-color: rgb(22, 38, 61);
+  color: rgb(187, 195, 206);
+  border: rgb(187, 195, 206) 2px solid;
+}
+
+#content div {
+  font-size: 1.3em;
+}
+
+#content p {
+  margin: 0;
+}
+
+#content hr {
+  margin: 0.2em;
 }
 
 
@@ -52,6 +92,8 @@ section, h2 {
   border: solid rgb(74, 74, 74) 3px;
   font-size: 2em;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
+  
+  transition: filter cubic-bezier(.31,.3,.36,1) 1s;
 }
 
 .hidden {
@@ -73,6 +115,40 @@ section, h2 {
   color: rgb(255, 115, 141);
 }
 
+.flag {
+  background-color: rgb(117, 255, 115);
+  color: rgb(117, 255, 115);
+  font-size: smaller;
+}
+
+.anim {
+  transition: filter cubic-bezier(.35,1.02,.67,.95) 0.8s;
+}
+
+.flash {
+  filter: brightness(150%);
+}
+
+
+
+#mines hr {
+  width: 100%;
+  margin: 1.5em 0 0.5em;
+}
+
 #controls {
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  grid-template-rows: repeat(3, 30px);
   margin-top: 1em;
+  gap: 10px;
+}
+
+#controls button {
+  background-color: rgb(22, 38, 61);
+  color: rgb(187, 195, 206);
+}
+
+#reset{
+  background-color: rgb(85, 27, 27) !important;
 }

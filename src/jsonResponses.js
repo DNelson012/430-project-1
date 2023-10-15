@@ -73,16 +73,51 @@ const tileClicked = (request, response, body) => {
   // Check if there was a game over
 
   const dataJSON = {
-    message: 'Server received game action.',
+    message: 'Server received game action (reveal).',
   };
 
   return respondJSON(request, response, 204, dataJSON);
 };
 
+const tileFlagged = (request, response, body) => {
+  // Check if the request has the proper parameters
+  if (!body.xPos || !body.yPos || !board.isValid(body.xPos, body.yPos)) {
+    // Return the response with the JSON
+    const dataJSON = {
+      message: 'Invalid parameters for flagged tile.',
+      id: 'badRequest_Flagged',
+    };
+    return respondJSON(request, response, 400, dataJSON);
+  }
+
+  // Flag the tile on the board
+  // This function does not return anything to the client
+  board.flagTile(body.xPos, body.yPos);
+
+  const dataJSON = {
+    message: 'Server received game action (flag).',
+  };
+
+  return respondJSON(request, response, 204, dataJSON);
+}
+
+// Resets the board, starting a new game
+const resetBoard = (request, response) => {
+  board.resetBoard();
+
+  const dataJSON = {
+    message: 'Board reset, and a new board created.',
+  };
+
+  return respondJSON(request, response, 201, dataJSON);
+}
+
 module.exports = {
   notFound,
   getBoardVisible,
   tileClicked,
+  tileFlagged,
+  resetBoard,
 };
 
 /*
