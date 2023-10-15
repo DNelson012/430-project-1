@@ -1,10 +1,12 @@
 // Constants
 const wide = 8;
 const tall = 8;
+const mineQty = 9;
 
 // Globals
 let board;
 let revealed;
+let numHidden;
 let mines;
 let firstMove;
 let indices; // Really shouldn't be, but its useful
@@ -160,6 +162,9 @@ const revealTiles = (x, y) => {
       const mineX = index % wide;
       const mineY = Math.floor(index / tall);
       mines.push({ x: mineX, y: mineY });
+      // Recalculate numbers
+      createBoard();
+      calcNums();
     } else {
       // Otherwise, you clicked on a mine and you lost
       return gameOver();
@@ -173,8 +178,10 @@ const revealTiles = (x, y) => {
     const posX = tilePos[0];
     const posY = tilePos[1];
 
-    // Don't reveal flagged tiles
-
+    if (!revealed[posX][posY]) {
+      // Decrement hidden count
+      numHidden--;
+    }
     // Reveal the tile
     revealed[posX][posY] = true;
 
@@ -191,7 +198,9 @@ const revealTiles = (x, y) => {
   if (firstMove) { firstMove = false; }
 
   // Check if the only tiles left are mines
-
+  if (numHidden <= mineQty) {
+    gameState = 'WIN';
+  }
   // Return all the values that were revealed
   //  Currently doesn't do anything with return
   return values;
@@ -227,8 +236,8 @@ const getBoard = () => {
 };
 
 // Returns the number of mines in the given quad
-const getHint = (quad) => {
-  quad = Number(quad); // I love javascript
+const getHint = (quadStr) => {
+  const quad = Number(quadStr); // I love javascript
   let xLow = -1; // Inclusive
   let xHigh = -1; // Exclusive
   let yLow = -1;
@@ -265,7 +274,6 @@ const getHint = (quad) => {
       }
     }
   }
-  console.log(xLow + "" + xHigh);
 
   return numMines;
 };
@@ -273,10 +281,11 @@ const getHint = (quad) => {
 // Initialization
 const init = () => {
   firstMove = true;
+  numHidden = wide * tall;
   gameState = 'PLAY';
   createBoard();
 
-  setMines(9);
+  setMines(mineQty);
   calcNums();
 };
 

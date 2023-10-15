@@ -101,7 +101,7 @@ const postResetBoard = async () => {
   
   // Make a new board after
   createBoard();
-  document.querySelector("#hint").innerHTML = "- - -";
+  document.querySelector("#gameText").innerHTML = "- - -";
 
   handleResponse(response, 'POST~'); 
   // It is a POST, but I don't want it fetching the board
@@ -122,6 +122,9 @@ const getBoard = async () => {
 
 // Based on which hint button was pressed, ask the server for a hint
 const getHint = async (element) => {
+  // Don't do anything if the game is over
+  if (gameState !== "PLAY") { return; }
+
   const quad = element.currentTarget.value;
 
   const response = await fetch(`/getHint?quad=${quad}`, {
@@ -176,11 +179,32 @@ const revealTile = (x, y, num) => {
 
 // Things to do when the game was lost
 const gameLost = () => {
-
+  let stateStr = `<b>You Lost!!</b>`;
+  // Dim the board
+  for (let i = 0; i < boardWidth; i++) {
+    for (let j = 0; j < boardHeight; j++) {
+      const tile = board.childNodes[i + boardWidth * j];
+      tile.setAttribute("style", "filter: brightness(70%);");
+    }
+  }
+  document.querySelector("#gameText").innerHTML = stateStr;
 }
 // Things to do when the game was won
 const gameWon = () => {
-  
+  let stateStr = `<b>You Won!!</b>`;
+  // Disable the board
+  for (let i = 0; i < boardWidth; i++) {
+    for (let j = 0; j < boardHeight; j++) {
+      const tile = board.childNodes[i + boardWidth * j];
+      tile.removeEventListener("click", clickTile);
+      // Flag any remaining hidden tiles
+      if (tile.classList[1] === "hidden") {
+        tile.classList.remove("hidden");
+        tile.classList.add("flag");
+      }
+    }
+  }
+  document.querySelector("#gameText").innerHTML = stateStr;
 }
 
 // Given an object containing a dictionary of tile coords and numbers,
@@ -190,12 +214,10 @@ const updateBoard = (board) => {
   let boardTiles = Object.keys(board);
   if (board.state === "LOSE") {
     gameState = board.state;
-    gameLost();
     delete board.state;
     boardTiles = Object.keys(board);
   } else if (board.state === "WIN") {
     gameState = board.state;
-    gameWon();
     delete board.state;
     boardTiles = Object.keys(board);
   }
@@ -204,12 +226,19 @@ const updateBoard = (board) => {
     const pos = boardTiles[i].split(',');
     revealTile(pos[0], pos[1], num);
   }
+
+  // Need these methods to happen after 
+  if (gameState === "LOSE") {
+    gameLost();
+  } else if (gameState === "WIN") {
+    gameWon();
+  }
 }
 
 // Show the hint to the user
 const displayHint = (hint, quad) => {
   const hintStr = `There are ${hint} mines in quadrant ${quad}.`;
-  document.querySelector("#hint").innerHTML = hintStr;
+  document.querySelector("#gameText").innerHTML = hintStr;
 }
 
 // Callback function for when a tile is clicked on
@@ -236,6 +265,7 @@ const clickTile = (element) => {
 
 // Creates the board in HTML
 const createBoard = () => {
+  gameState = 'PLAY'; // Set the game state
   const board = document.querySelector('#board');
   board.innerHTML = "";
 
@@ -263,7 +293,6 @@ const createBoard = () => {
 // Initialization
 const init = () => {
   content = document.querySelector("#content div");
-  gameState = 'PLAY';
 
   boardWidth = 8;
   boardHeight = 8;

@@ -131,8 +131,9 @@ section, h2 {
 
 
 
-#hint {
+#gameText {
   margin-bottom: 0;
+  font-size: 1.75em;
 }
 
 #mines hr {
@@ -144,7 +145,7 @@ section, h2 {
   display: grid;
   grid-template-columns: repeat(3, 120px);
   grid-template-rows: repeat(3, 30px);
-  margin-top: 1em;
+  margin-top: 2em;
   gap: 10px;
 }
 
